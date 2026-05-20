@@ -269,7 +269,8 @@ def detectar_data_nome(nome_arquivo):
 # ─────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def processar_passagens(conteudo_bytes):
-    df = pd.read_excel(conteudo_bytes, engine='openpyxl')
+    import io
+    df = pd.read_excel(io.BytesIO(conteudo_bytes), engine='openpyxl')
     df['DT_HR_ENTRADA'] = pd.to_datetime(df['DT_HR_ENTRADA'], dayfirst=True, errors='coerce')
     df['DT_HR_SAIDA']   = pd.to_datetime(df['DT_HR_SAIDA'],   dayfirst=True, errors='coerce')
     df['DT_INTERNACAO'] = pd.to_datetime(df['DT_INTERNACAO'],  dayfirst=True, errors='coerce')
@@ -282,7 +283,8 @@ def processar_passagens(conteudo_bytes):
 
 @st.cache_data(show_spinner=False)
 def processar_ps(conteudo_bytes):
-    df = pd.read_csv(conteudo_bytes, sep=';', encoding='latin1')
+    import io
+    df = pd.read_csv(io.BytesIO(conteudo_bytes), sep=';', encoding='latin1')
     df['SENHA_DT'] = df['DH_SENHA_INI'].apply(parse_senha)
     df['REGHC']    = df['nr_rghc'].astype(str).str.strip().str.upper()
     return df
