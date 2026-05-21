@@ -196,6 +196,8 @@ hr { border: none; border-top: 1px solid #e0e0e0; margin: 1.5rem 0; }
 # CONSTANTES
 # ─────────────────────────────────────────────────────────────
 UNIDADES_PS_ORIGEM = ['E04AA','E4AF','E4FF','E4SA','U04AA','SAGUAO','SALA ESPERA']
+# Unidades sem leito cadastrado - nao podem ser destino valido
+SEM_LEITO          = ['E4AF','E4FF','E4SA','SAGUAO','SALA ESPERA','U04AA']
 BLOQUEIO_G         = UNIDADES_PS_ORIGEM + ['SCC','E4AB','E04CC','U04GN']
 
 ESCALA = [
@@ -214,6 +216,11 @@ def eh_ps(texto):
     if pd.isna(texto): return False
     t = str(texto).upper()
     return any(c in t for c in UNIDADES_PS_ORIGEM)
+
+def eh_sem_leito(texto):
+    if pd.isna(texto): return False
+    t = str(texto).upper()
+    return any(c in t for c in SEM_LEITO)
 
 def eh_bloq_g(texto):
     if pd.isna(texto): return False
@@ -321,7 +328,10 @@ def calcular_fg(df_pass, df_ps, data_ref):
         base = df[
             (df['DT_HR_ENTRADA'] >= ini) &
             (df['DT_HR_ENTRADA'] <= fim) &
-            df['UNID_ANTERIOR'].apply(eh_ps)
+            df['UNID_ANTERIOR'].notna() &
+            df['UNID_ANTERIOR'].apply(eh_ps) &
+            ~df['UNID_INTERNACAO'].apply(eh_sem_leito) &
+            (df['UNID_INTERNACAO'] != df['UNID_ANTERIOR'])
         ].copy()
 
         # G
